@@ -19,7 +19,7 @@ COPY index.html vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.jso
 COPY public ./public
 COPY src ./src
 
-# Production canonical / OG URLs (falls back in vite.config if unset)
+# Production canonical / OG URLs (if empty, build uses https://envtool.eliott.cloud)
 ARG VITE_SITE_URL=
 ENV VITE_SITE_URL=${VITE_SITE_URL}
 

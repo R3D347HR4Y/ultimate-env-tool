@@ -13,9 +13,13 @@ function normalizeSiteUrl(raw: string | undefined, fallback: string): string {
   return t.replace(/\/$/, '')
 }
 
+const DEFAULT_PRODUCTION_SITE_URL = 'https://envtool.eliott.cloud'
+
 function seoPipeline(mode: string): { siteUrl: string; canonical: string; ogImage: string; jsonLdStr: string } {
   const env = loadEnv(mode, process.cwd(), '')
-  const siteUrl = normalizeSiteUrl(env.VITE_SITE_URL, 'http://localhost:5188')
+  const fallback =
+    mode === 'production' ? DEFAULT_PRODUCTION_SITE_URL : 'http://localhost:5188'
+  const siteUrl = normalizeSiteUrl(env.VITE_SITE_URL, fallback)
   const canonical = `${siteUrl}/`
   const ogImage = `${siteUrl}/og-image.png`
   const jsonLd = {
