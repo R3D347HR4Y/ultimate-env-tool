@@ -110,4 +110,27 @@ Additional head metadata and **JSON-LD** are injected from [`src/seo.ts`](src/se
 
 ## License
 
-This repository is marked **private** in `package.json`. Add a `LICENSE` file here if you intend to open-source the project.
+This project is **copyright © Eliott Guillaumin** and licensed under the **GNU Affero General Public License v3.0** — see [`LICENSE`](LICENSE).
+
+### Using it for free (encouraged)
+
+- Run it locally, self-host it for yourself, or deploy it on **your own infrastructure** for **yourself or your organization** without owing a license fee.
+- Change the code and share it under AGPL rules (including network use: AGPL’s “remote interaction” obligations apply when you modify and offer the program over a network — read the full license).
+
+### Paid hosting for other people (restricted)
+
+You **may not** charge third parties for access to a hosted copy of this app (paid SaaS, selling seats to “Ultimate Env Tool as a service”, etc.) **without a separate commercial agreement** with the copyright holder.
+
+That policy is spelled out in **[`LICENSE-NONCOMMERCIAL`](LICENSE-NONCOMMERCIAL)** (supplemental terms). For a commercial license or questions: **[eliott.cloud](https://eliott.cloud)**.
+
+### Summary files
+
+| File | Role |
+|------|------|
+| [`LICENSE`](LICENSE) | Full **AGPL-3.0** text |
+| [`LICENSE-NONCOMMERCIAL`](LICENSE-NONCOMMERCIAL) | Supplemental terms: **no charging others for hosted access** without permission |
+| [`NOTICE`](NOTICE) | Copyright and pointers to the above |
+
+*This section is a short overview, not legal advice. If AGPL’s obligations or the supplement affect your product, consult a lawyer.*
+
+The repo may remain **`"private": true` in `package.json`** for Git hosting preference; that flag does not change the license terms in these files.

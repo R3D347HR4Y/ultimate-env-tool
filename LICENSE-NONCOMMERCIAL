@@ -1,0 +1,63 @@
+Ultimate Env Tool — Supplemental non-commercial & fair-hosting terms
+Copyright (C) 2026 Eliott Guillaumin
+https://eliott.cloud
+
+This file works together with the GNU Affero General Public License v3.0
+("AGPL-3.0"). A complete copy of AGPL-3.0 is provided in the LICENSE file.
+
+----------------------------------------------------------------------
+1. WHAT YOU CAN DO WITHOUT ASKING (IN ADDITION TO AGPL RIGHTS)
+----------------------------------------------------------------------
+
+- Use the software personally or inside your organization for free.
+- Self-host it on infrastructure you control for yourself, your team, or
+  your company — including internal tools and non-public deployments —
+  as long as you are NOT charging third parties specifically for access
+  to this application.
+- Study, modify, and share the source under the terms of AGPL-3.0.
+
+Deploying on your own infra for your own use or your organization's use
+without making other people pay to use this app is explicitly welcome.
+
+----------------------------------------------------------------------
+2. PAID ACCESS FOR OTHERS — NEEDS A COMMERCIAL LICENSE
+----------------------------------------------------------------------
+
+You may NOT, without a separate written agreement from the copyright
+holder:
+
+  (a) Operate this software (or a derivative whose primary value to
+      customers is substantially the same functionality) as a paid
+      hosted service where end users or customers pay you for access,
+      OR
+
+  (b) Offer it in a way where access to this application is the main
+      thing people are paying for (for example: multi-tenant SaaS, paid
+      "env compare as a service", or resale of hosted access).
+
+If you want to charge third parties for access to a deployment of this
+tool, contact the copyright holder for a commercial license:
+
+  https://eliott.cloud
+
+----------------------------------------------------------------------
+3. NO WARRANTY
+----------------------------------------------------------------------
+
+THIS SUPPLEMENT IS PROVIDED FOR CLARITY ONLY. THE SOFTWARE IS LICENSED
+UNDER AGPL-3.0 "AS IS". SEE SECTIONS 15–17 OF AGPL-3.0 FOR DISCLAIMER OF
+WARRANTY AND LIMITATION OF LIABILITY.
+
+----------------------------------------------------------------------
+4. GOVERNING INTERPRETATION
+----------------------------------------------------------------------
+
+If a court or authority finds any part of this supplement unenforceable,
+the remainder stays in effect to the maximum extent permitted by law.
+Nothing here is intended to reduce rights that AGPL-3.0 clearly grants;
+where something in this file could be read as conflicting with AGPL-3.0,
+AGPL-3.0 controls for that specific point — except that the copyright
+holder offers commercial licensing for paid third-party hosting as
+described in section 2.
+
+For legal advice in your situation, consult a qualified attorney.
