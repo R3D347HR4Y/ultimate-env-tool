@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-labelledby="faviconTitle">
+  <title id="faviconTitle">Ultimate Env Tool</title>
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed"/>
+      <stop offset="100%" style="stop-color:#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="#18181b"/>
+  <rect x="5" y="6" width="8" height="20" rx="1.5" fill="none" stroke="url(#g)" stroke-width="2"/>
+  <rect x="19" y="6" width="8" height="20" rx="1.5" fill="none" stroke="url(#g)" stroke-width="2"/>
+  <path d="M13 16h6" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+  <path d="M16 13v6" stroke="#22d3ee" stroke-width="1.8" stroke-linecap="round"/>
+</svg>

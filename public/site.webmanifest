@@ -1,0 +1,16 @@
+{
+  "name": "Ultimate Env Tool — compare & merge .env files",
+  "short_name": "Ultimate Env",
+  "description": "Compare, diff, and merge .env files in your browser with a matrix view, hybrid merge, and optional encryption.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#09090b",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ]
+}
