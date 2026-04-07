@@ -95,8 +95,8 @@ export function ComparisonMatrix({
   }
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-950">
-      <div className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
+    <div className="min-w-0 max-w-full rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-950">
+      <div className="rounded-t-xl border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
         <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">Comparison matrix</h2>
         <p className="mt-1 max-w-3xl text-xs text-zinc-600 dark:text-zinc-400">
           Scan a side-by-side diff of every key across your dotenv columns: spot mismatches, rename a key in all envs at
@@ -197,7 +197,10 @@ export function ComparisonMatrix({
           </div>
         </div>
       </div>
-      <div className="overflow-x-auto" onScroll={(event) => setScrollLeft(event.currentTarget.scrollLeft)}>
+      <div
+        className="max-w-full overflow-x-auto rounded-b-xl"
+        onScroll={(event) => setScrollLeft(event.currentTarget.scrollLeft)}
+      >
         <table
           className="table-fixed border-collapse text-left text-sm"
           style={{ width: `${totalTableWidth}px`, minWidth: `${totalTableWidth}px` }}

@@ -25,7 +25,7 @@ import {
   defaultEnvColor,
   normalizeEnvSlot,
 } from './types'
-import { seo } from './seo'
+import { heroDetail, heroTagline, seo } from './seo'
 
 function uid(): string {
   return crypto.randomUUID?.() ?? `id-${Math.random().toString(36).slice(2)}`
@@ -529,148 +529,215 @@ export default function App() {
         onEnabled={(key) => handleEnablePersist(key)}
       />
 
-      <header className="border-b border-zinc-200 bg-white/90 px-4 py-6 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90">
-        <div className={`mx-auto flex ${layoutWidthClass} flex-col gap-4 sm:flex-row sm:items-start sm:justify-between`}>
-          <div className="min-w-0 text-left">
-            <h1
-              id="site-title"
-              className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
-            >
-              {seo.siteName}
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
-              Compare, diff, and merge multiple <code className="rounded bg-zinc-200 px-1 py-0.5 text-xs dark:bg-zinc-800">.env</code>{' '}
-              (dotenv) files entirely in your browser: paste or drop local, dev, and staging secrets into columns, align key sets, read the matrix, and build a hybrid merge. Everything stays client-side unless you enable persistence—then AES-256-GCM encrypts backups in this browser and the key only lives in this tab until you close it.
-            </p>
+      <header className="overflow-x-clip border-b border-zinc-200/90 bg-gradient-to-b from-white to-zinc-50/90 px-4 py-4 backdrop-blur-md dark:border-zinc-800 dark:from-zinc-950 dark:to-zinc-950/92">
+        <div className={`mx-auto ${layoutWidthClass} space-y-3`}>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+            <div className="min-w-0 flex-1 text-left">
+              <h1
+                id="site-title"
+                className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
+              >
+                {seo.siteName}
+              </h1>
+              <p className="mt-1.5 max-w-2xl text-sm font-medium leading-snug text-zinc-800 dark:text-zinc-200">
+                {heroTagline}
+              </p>
+              <p className="mt-1.5 max-w-2xl text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+                {heroDetail}
+              </p>
+            </div>
+            <aside className="w-full shrink-0 sm:w-auto sm:max-w-md">
+              <div className="rounded-2xl border border-zinc-200/90 bg-white/80 p-3 shadow-sm ring-1 ring-black/[0.04] dark:border-zinc-700/90 dark:bg-zinc-900/70 dark:ring-white/[0.06]">
+                <p
+                  className={`mb-2 text-sm font-semibold tracking-tight ${
+                    persistenceActive
+                      ? 'text-emerald-700 dark:text-emerald-400'
+                      : 'text-zinc-500 dark:text-zinc-400'
+                  }`}
+                >
+                  {persistenceActive ? 'Persistence on' : 'Persistence off'}
+                </p>
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  {bootstrapped && !persistenceActive && !showUnlock && (
+                    <button
+                      type="button"
+                      onClick={() => setUnlockDialogOpen(true)}
+                      className="inline-flex max-w-full items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-800 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 active:scale-[0.98] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-500 dark:hover:bg-zinc-800 sm:text-sm"
+                    >
+                      Import archive
+                    </button>
+                  )}
+                  {bootstrapped && !persistenceActive && !showUnlock && (
+                    <button
+                      type="button"
+                      onClick={() => setEnableDialogOpen(true)}
+                      className="inline-flex max-w-full items-center justify-center rounded-xl bg-violet-600 px-3 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-violet-500 active:scale-[0.98] dark:bg-violet-600 dark:hover:bg-violet-500 sm:text-sm"
+                    >
+                      Enable persistence
+                    </button>
+                  )}
+                  {bootstrapped && persistenceActive && (
+                    <button
+                      type="button"
+                      onClick={() => void exportEncryptedArchive()}
+                      className="inline-flex max-w-full items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-800 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 active:scale-[0.98] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-500 dark:hover:bg-zinc-800 sm:text-sm"
+                    >
+                      Export archive
+                    </button>
+                  )}
+                  {bootstrapped && persistenceActive && (
+                    <button
+                      type="button"
+                      onClick={purgeEncryptedStorage}
+                      className="inline-flex max-w-full items-center justify-center rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-800 transition hover:bg-rose-100 active:scale-[0.98] dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200 dark:hover:bg-rose-950/60 sm:text-sm"
+                    >
+                      Purge storage
+                    </button>
+                  )}
+                </div>
+              </div>
+            </aside>
           </div>
-          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 self-end sm:self-start">
-            {persistenceActive && (
-              <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-800 dark:text-emerald-300">
-                Persistence on
-              </span>
-            )}
-            {bootstrapped && !persistenceActive && !showUnlock && (
-              <button
-                type="button"
-                onClick={() => setUnlockDialogOpen(true)}
-                className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+
+          <nav
+            aria-label="Jump to section"
+            className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-1.5"
+          >
+            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
+              Jump to
+            </span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <a
+                href="#environment-columns"
+                className="rounded-md border border-zinc-200/90 bg-white px-2.5 py-1 text-[11px] font-medium text-zinc-800 transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-500 dark:hover:bg-zinc-800"
               >
-                Import encrypted archive
-              </button>
-            )}
-            {bootstrapped && !persistenceActive && !showUnlock && (
-              <button
-                type="button"
-                onClick={() => setEnableDialogOpen(true)}
-                className="rounded-lg border border-violet-300 bg-violet-50 px-3 py-2 text-sm font-medium text-violet-900 hover:bg-violet-100 dark:border-violet-700 dark:bg-violet-950/50 dark:text-violet-100 dark:hover:bg-violet-900/40"
+                Env columns
+              </a>
+              <a
+                href="#compare-area"
+                className="rounded-md border border-zinc-200/90 bg-white px-2.5 py-1 text-[11px] font-medium text-zinc-800 transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-500 dark:hover:bg-zinc-800"
               >
-                Enable persistence
-              </button>
-            )}
-            {bootstrapped && persistenceActive && (
-              <button
-                type="button"
-                onClick={() => void exportEncryptedArchive()}
-                className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                Matrix & merge
+              </a>
+              <a
+                href="#how-it-works"
+                className="rounded-md border border-zinc-200/90 bg-white px-2.5 py-1 text-[11px] font-medium text-zinc-800 transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-500 dark:hover:bg-zinc-800"
               >
-                Export encrypted archive
-              </button>
-            )}
-            {bootstrapped && persistenceActive && (
-              <button
-                type="button"
-                onClick={purgeEncryptedStorage}
-                className="rounded-lg border border-rose-300 bg-white px-3 py-2 text-sm font-medium text-rose-800 hover:bg-rose-50 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-200 dark:hover:bg-rose-950/60"
-              >
-                Purge encrypted storage
-              </button>
-            )}
-          </div>
+                Privacy & source
+              </a>
+            </div>
+          </nav>
         </div>
       </header>
 
       <main
-        className={`mx-auto ${layoutWidthClass} space-y-8 px-4 py-8 ${showUnlock ? 'pointer-events-none opacity-40' : ''}`}
+        className={`mx-auto ${layoutWidthClass} space-y-5 px-4 py-5 ${showUnlock ? 'pointer-events-none opacity-40' : ''}`}
         aria-labelledby="site-title"
         aria-hidden={showUnlock}
       >
-        <section className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-3">
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={alignKeys}
-                onChange={(e) => setAlignKeys(e.target.checked)}
-                disabled={showUnlock}
-              />
-              Align key sets (show empty cells)
-            </label>
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={sortAsc}
-                onChange={(e) => setSortAsc(e.target.checked)}
-                disabled={showUnlock}
-              />
-              Sort keys A–Z
-            </label>
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={useFullWidth}
-                onChange={(e) => setUseFullWidth(e.target.checked)}
-                disabled={showUnlock}
-              />
-              Use full width
-            </label>
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={hideEnvContents}
-                onChange={(e) => setHideEnvContents(e.target.checked)}
-                disabled={showUnlock}
-              />
-              Hide env contents
-            </label>
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={hideTableContents}
-                onChange={(e) => setHideTableContents(e.target.checked)}
-                disabled={showUnlock}
-              />
-              Hide table contents
-            </label>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={addSlot}
-              disabled={slots.length >= MAX_ENVS || showUnlock}
-              className="rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
-            >
-              Add env ({slots.length}/{MAX_ENVS})
-            </button>
-            <button
-              type="button"
-              onClick={clearAll}
-              disabled={showUnlock}
-              className="rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-900"
-            >
-              Clear all slots
-            </button>
+        <section
+          id="workspace-options"
+          aria-label="Workspace options"
+          className="scroll-mt-32 rounded-xl border border-zinc-200/90 bg-white/90 p-2.5 shadow-sm ring-1 ring-black/[0.04] dark:border-zinc-700/90 dark:bg-zinc-900/55 dark:ring-white/[0.06]"
+        >
+          <div className="space-y-2">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+              Display & privacy
+            </p>
+            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-6 lg:grid-cols-12">
+              <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-zinc-200/80 bg-zinc-50/70 px-2 py-1.5 transition hover:border-zinc-300 hover:bg-zinc-50 sm:col-span-3 lg:col-span-4 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 dark:border-zinc-700/80 dark:bg-zinc-800/40 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/70">
+                <input
+                  type="checkbox"
+                  checked={alignKeys}
+                  onChange={(e) => setAlignKeys(e.target.checked)}
+                  disabled={showUnlock}
+                  className="mt-px h-3.5 w-3.5 shrink-0 rounded border-zinc-300 text-violet-600 focus:ring-1 focus:ring-violet-500/30 dark:border-zinc-600 dark:bg-zinc-900"
+                />
+                <span className="min-w-0 text-[11px] leading-snug text-zinc-800 dark:text-zinc-200">
+                  Align key sets <span className="text-zinc-500 dark:text-zinc-400">(empty cells)</span>
+                </span>
+              </label>
+              <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-zinc-200/80 bg-zinc-50/70 px-2 py-1.5 transition hover:border-zinc-300 hover:bg-zinc-50 sm:col-span-3 lg:col-span-4 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 dark:border-zinc-700/80 dark:bg-zinc-800/40 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/70">
+                <input
+                  type="checkbox"
+                  checked={sortAsc}
+                  onChange={(e) => setSortAsc(e.target.checked)}
+                  disabled={showUnlock}
+                  className="mt-px h-3.5 w-3.5 shrink-0 rounded border-zinc-300 text-violet-600 focus:ring-1 focus:ring-violet-500/30 dark:border-zinc-600 dark:bg-zinc-900"
+                />
+                <span className="min-w-0 text-[11px] leading-snug text-zinc-800 dark:text-zinc-200">Sort keys A–Z</span>
+              </label>
+              <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-zinc-200/80 bg-zinc-50/70 px-2 py-1.5 transition hover:border-zinc-300 hover:bg-zinc-50 sm:col-span-3 lg:col-span-4 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 dark:border-zinc-700/80 dark:bg-zinc-800/40 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/70">
+                <input
+                  type="checkbox"
+                  checked={useFullWidth}
+                  onChange={(e) => setUseFullWidth(e.target.checked)}
+                  disabled={showUnlock}
+                  className="mt-px h-3.5 w-3.5 shrink-0 rounded border-zinc-300 text-violet-600 focus:ring-1 focus:ring-violet-500/30 dark:border-zinc-600 dark:bg-zinc-900"
+                />
+                <span className="min-w-0 text-[11px] leading-snug text-zinc-800 dark:text-zinc-200">Use full width</span>
+              </label>
+              <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-zinc-200/80 bg-zinc-50/70 px-2 py-1.5 transition hover:border-zinc-300 hover:bg-zinc-50 sm:col-span-3 lg:col-span-6 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 dark:border-zinc-700/80 dark:bg-zinc-800/40 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/70">
+                <input
+                  type="checkbox"
+                  checked={hideEnvContents}
+                  onChange={(e) => setHideEnvContents(e.target.checked)}
+                  disabled={showUnlock}
+                  className="mt-px h-3.5 w-3.5 shrink-0 rounded border-zinc-300 text-violet-600 focus:ring-1 focus:ring-violet-500/30 dark:border-zinc-600 dark:bg-zinc-900"
+                />
+                <span className="min-w-0 text-[11px] leading-snug text-zinc-800 dark:text-zinc-200">
+                  Hide env column text
+                </span>
+              </label>
+              <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-zinc-200/80 bg-zinc-50/70 px-2 py-1.5 transition hover:border-zinc-300 hover:bg-zinc-50 sm:col-span-3 lg:col-span-6 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 dark:border-zinc-700/80 dark:bg-zinc-800/40 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/70">
+                <input
+                  type="checkbox"
+                  checked={hideTableContents}
+                  onChange={(e) => setHideTableContents(e.target.checked)}
+                  disabled={showUnlock}
+                  className="mt-px h-3.5 w-3.5 shrink-0 rounded border-zinc-300 text-violet-600 focus:ring-1 focus:ring-violet-500/30 dark:border-zinc-600 dark:bg-zinc-900"
+                />
+                <span className="min-w-0 text-[11px] leading-snug text-zinc-800 dark:text-zinc-200">
+                  Hide table values <span className="text-zinc-500 dark:text-zinc-400">(per row)</span>
+                </span>
+              </label>
+            </div>
           </div>
         </section>
 
-        <section className="space-y-3" aria-label="Environment file columns">
-          <div>
-            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">Environment columns</h2>
-            <p className="mt-1 max-w-3xl text-xs text-zinc-600 dark:text-zinc-400">
-              Paste, type, or drop each dotenv file into its own column. Name and color slots to tell local, staging, and
-              production configs apart while you work with sensitive values privately on your machine.
-            </p>
+        <section
+          id="environment-columns"
+          className="scroll-mt-32 space-y-2.5"
+          aria-label="Environment file columns"
+        >
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">Environment columns</h2>
+              <p className="mt-1 max-w-3xl text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+                Paste, type, or drop each dotenv file into its own column. Name and color slots to tell local, staging, and
+                production configs apart while you work with sensitive values privately on your machine.
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-2 sm:pt-0.5">
+              <button
+                type="button"
+                onClick={addSlot}
+                disabled={slots.length >= MAX_ENVS || showUnlock}
+                className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-3 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-zinc-800 active:scale-[0.98] disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white sm:text-sm"
+              >
+                Add env ({slots.length}/{MAX_ENVS})
+              </button>
+              <button
+                type="button"
+                onClick={clearAll}
+                disabled={showUnlock}
+                className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 active:scale-[0.98] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 sm:text-sm"
+              >
+                Clear all slots
+              </button>
+            </div>
           </div>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
           {parsedSlots.map((slot, index) => (
             <EnvSlotPanel
               key={slot.id}
@@ -690,72 +757,158 @@ export default function App() {
           </div>
         </section>
 
-        {hasAnyContent ? (
-          <>
-            <section className="space-y-3">
-              {legendCollapsed && (
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setLegendCollapsed(false)}
-                    className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                  >
-                    Show legend
-                  </button>
-                </div>
-              )}
-              <div className={legendCollapsed ? '' : 'grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start'}>
-              <ComparisonMatrix
-                slots={parsedSlots}
-                keys={keysForMatrix}
-                alignKeys={alignKeys}
-                rowMaskByKey={rowMaskByKey}
-                hideContents={hideTableContents}
-                onUpdateCellValue={updateCellValue}
-                onRenameKey={renameKeyAcrossEnvs}
-                onToast={showToast}
-                keyColumnWidth={keyColumnWidth}
-                valueColumnWidth={valueColumnWidth}
-                onKeyColumnWidthChange={updateKeyColumnWidth}
-                onValueColumnWidthChange={updateValueColumnWidth}
-              />
-                {!legendCollapsed && (
-                  <div className="w-full lg:sticky lg:top-4 lg:w-fit lg:max-w-88 lg:self-start">
-                    <Legend
-                      collapsed={legendCollapsed}
-                      onToggleCollapse={() => setLegendCollapsed((c) => !c)}
-                      options={legendFilterOptions}
-                      envColors={parsedSlots.map((slot) => slot.color)}
-                      envLabels={parsedSlots.map((slot, index) => slot.displayName.trim() || `Env ${index + 1}`)}
-                      selectedFilterIds={activeLegendFilterIds}
-                      onSelectedFilterIdsChange={setLegendFilterIds}
-                      totalKeyCount={keysInOrder.length}
-                      filteredKeyCount={keysForMatrix.length}
-                    />
+        <section
+          id="compare-area"
+          className="scroll-mt-32 space-y-5"
+          aria-label="Compare, filter, and merge"
+        >
+          {hasAnyContent ? (
+            <>
+              <section className="space-y-2.5">
+                {legendCollapsed && (
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setLegendCollapsed(false)}
+                      className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                      Show legend
+                    </button>
                   </div>
                 )}
+                <div className={legendCollapsed ? 'min-w-0' : 'grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start'}>
+                  <div className="min-w-0 max-w-full">
+                    <ComparisonMatrix
+                      slots={parsedSlots}
+                      keys={keysForMatrix}
+                      alignKeys={alignKeys}
+                      rowMaskByKey={rowMaskByKey}
+                      hideContents={hideTableContents}
+                      onUpdateCellValue={updateCellValue}
+                      onRenameKey={renameKeyAcrossEnvs}
+                      onToast={showToast}
+                      keyColumnWidth={keyColumnWidth}
+                      valueColumnWidth={valueColumnWidth}
+                      onKeyColumnWidthChange={updateKeyColumnWidth}
+                      onValueColumnWidthChange={updateValueColumnWidth}
+                    />
+                  </div>
+                  {!legendCollapsed && (
+                    <div className="w-full lg:sticky lg:top-4 lg:w-fit lg:max-w-88 lg:self-start">
+                      <Legend
+                        collapsed={legendCollapsed}
+                        onToggleCollapse={() => setLegendCollapsed((c) => !c)}
+                        options={legendFilterOptions}
+                        envColors={parsedSlots.map((slot) => slot.color)}
+                        envLabels={parsedSlots.map((slot, index) => slot.displayName.trim() || `Env ${index + 1}`)}
+                        selectedFilterIds={activeLegendFilterIds}
+                        onSelectedFilterIdsChange={setLegendFilterIds}
+                        totalKeyCount={keysInOrder.length}
+                        filteredKeyCount={keysForMatrix.length}
+                      />
+                    </div>
+                  )}
+                </div>
+              </section>
+              <div id="hybrid-merge" className="scroll-mt-32">
+                <HybridBuilder
+                  slots={parsedSlots}
+                  priorityOrder={hybridOrder}
+                  onReorder={setPriorityOrder}
+                  enabledSlotIds={activeHybridEnabledIds}
+                  onEnabledSlotIdsChange={setHybridEnabledIds}
+                  universe={hybridUniverse}
+                  onUniverseChange={setHybridUniverse}
+                  keysInOrder={keysInOrder}
+                />
               </div>
-            </section>
-            <HybridBuilder
-              slots={parsedSlots}
-              priorityOrder={hybridOrder}
-              onReorder={setPriorityOrder}
-              enabledSlotIds={activeHybridEnabledIds}
-              onEnabledSlotIdsChange={setHybridEnabledIds}
-              universe={hybridUniverse}
-              onUniverseChange={setHybridUniverse}
-              keysInOrder={keysInOrder}
-            />
-          </>
-        ) : (
-          <p className="rounded-xl border border-dashed border-zinc-300 bg-white/50 px-6 py-12 text-center text-sm text-zinc-500 dark:border-zinc-600 dark:bg-zinc-900/30 dark:text-zinc-400">
-            Paste or drop .env content into at least one column to open the comparison matrix, row filters, and hybrid env
-            merger.
-          </p>
-        )}
+            </>
+          ) : (
+            <p className="rounded-xl border border-dashed border-zinc-300 bg-white/50 px-5 py-8 text-center text-sm text-zinc-500 dark:border-zinc-600 dark:bg-zinc-900/30 dark:text-zinc-400">
+              Paste or drop .env content into at least one column to open the comparison matrix, row filters, and hybrid env
+              merger.
+            </p>
+          )}
+        </section>
+
+        <section
+          id="how-it-works"
+          className="scroll-mt-32 rounded-2xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm ring-1 ring-black/[0.04] dark:border-zinc-700/90 dark:bg-zinc-900/55 dark:ring-white/[0.06]"
+          aria-labelledby="how-it-works-heading"
+        >
+          <h2 id="how-it-works-heading" className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+            How it works, privacy, and hosting
+          </h2>
+          <div className="mt-3 space-y-3 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Workflow</h3>
+              <p className="mt-1">
+                Paste or drop each dotenv file into a column, use the matrix to compare values and edit cells, filter rows from
+                the legend, then optionally build a hybrid file from your chosen envs and priority order—all in this page.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Data stays yours</h3>
+              <p className="mt-1">
+                Normal use keeps parsed text only in your browser tab memory. Optional persistence stores an{' '}
+                <strong className="font-medium text-zinc-900 dark:text-zinc-100">encrypted</strong> snapshot in{' '}
+                <code className="rounded bg-zinc-200 px-1 py-0.5 text-xs dark:bg-zinc-800">localStorage</code> with{' '}
+                <strong className="font-medium text-zinc-900 dark:text-zinc-100">AES-256-GCM</strong>; the key stays in JS memory
+                until you close the tab. There is <strong className="font-medium text-zinc-900 dark:text-zinc-100">no account</strong>,{' '}
+                <strong className="font-medium text-zinc-900 dark:text-zinc-100">no API</strong>, and{' '}
+                <strong className="font-medium text-zinc-900 dark:text-zinc-100">no telemetry</strong> in this app: your secrets are not
+                sent to a server for processing.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Static hosting &amp; operator access
+              </h3>
+              <p className="mt-1">
+                The deployed build is <strong className="font-medium text-zinc-900 dark:text-zinc-100">static files</strong> served
+                by <strong className="font-medium text-zinc-900 dark:text-zinc-100">nginx</strong> (or any static host). We do not run an
+                application server or database for your session. That means the <strong className="font-medium text-zinc-900 dark:text-zinc-100">host cannot read</strong> what you type in the fields—it only serves the same HTML, JS, and CSS bundle to everyone. Your
+                inputs exist only in the browser unless you explicitly enable encrypted local backup or export an archive.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Stack &amp; dependencies
+              </h3>
+              <p className="mt-1">
+                Built with <strong className="font-medium text-zinc-900 dark:text-zinc-100">React 19</strong>,{' '}
+                <strong className="font-medium text-zinc-900 dark:text-zinc-100">TypeScript</strong>,{' '}
+                <strong className="font-medium text-zinc-900 dark:text-zinc-100">Vite 8</strong>,{' '}
+                <strong className="font-medium text-zinc-900 dark:text-zinc-100">Tailwind CSS v4</strong>, and{' '}
+                <strong className="font-medium text-zinc-900 dark:text-zinc-100">Vitest</strong> for tests. Production dependencies are
+                intentionally minimal: <code className="rounded bg-zinc-200 px-1 py-0.5 text-xs dark:bg-zinc-800">react</code> and{' '}
+                <code className="rounded bg-zinc-200 px-1 py-0.5 text-xs dark:bg-zinc-800">react-dom</code> only.
+              </p>
+            </div>
+            <div className="rounded-xl border border-amber-200/90 bg-amber-50/80 p-3.5 dark:border-amber-900/50 dark:bg-amber-950/30">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-amber-900 dark:text-amber-200">
+                Audit the code &amp; other tools
+              </h3>
+              <p className="mt-2 text-sm text-amber-950 dark:text-amber-100/90">
+                This project is <strong className="font-medium">open source</strong> (
+                <a
+                  href={seo.sourceRepoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-amber-900 underline decoration-dotted underline-offset-2 hover:text-amber-950 dark:text-amber-200 dark:hover:text-amber-50"
+                >
+                  browse or clone on GitHub
+                </a>
+                ). You can review every line and run it locally or self-host so behavior matches what you expect. Many other
+                “.env compare” or “env merger” sites online are <strong className="font-medium">not meaningfully auditable</strong>: you
+                cannot verify where your secrets go. Treat unaudited third-party paste tools as high risk for credentials.
+              </p>
+            </div>
+          </div>
+        </section>
       </main>
 
-      <footer className="border-t border-zinc-200 px-4 py-6 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
+      <footer className="border-t border-zinc-200 px-4 py-4 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
         <p>
           {persistenceActive
             ? 'Persistence saves encrypted state in localStorage. The encryption key exists only in this tab until you close it.'
@@ -770,6 +923,15 @@ export default function App() {
             className="font-medium text-zinc-700 underline decoration-dotted underline-offset-4 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100"
           >
             More creations on eliott.cloud
+          </a>
+          {' · '}
+          <a
+            href={seo.sourceRepoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-zinc-700 underline decoration-dotted underline-offset-4 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100"
+          >
+            Source on GitHub
           </a>
         </p>
       </footer>
