@@ -13,7 +13,7 @@ Created by **[Eliott Guillaumin](https://eliott.cloud)**.
 - **Row filters (legend)** — Filter the matrix by patterns such as same value on a subset of envs, unique to one env, all different, or missing on an env.
 - **Hybrid env merge** — Choose **union** or **intersection** for which keys appear, enable/disable sources, drag to set **priority**; **first defined wins** per key for the merged output.
 - **Optional persistence** — AES-256-GCM encrypted snapshot in `localStorage`; encryption key stays in tab memory until you close it. Export/import **`ultimate-env-tool.encrypted-archive.json`** when persistence is enabled.
-- **Client-side first** — No account and no server for editing; data stays on your machine unless you opt into encrypted local storage.
+- **Client-side first** — No account and no server for editing; data stays on your machine even if you opt into encrypted local storage (provides you with an AES-256 key to store in your favorite Password Manager)
 
 ---
 
@@ -83,12 +83,36 @@ Static SEO assets are emitted into `dist/` on build:
 
 Additional head metadata and **JSON-LD** are injected from [`src/seo.ts`](src/seo.ts) via Vite’s `transformIndexHtml`.
 
+### Docker / CapRover
+
+The repo includes **`captain-definition`** at the repo root (CapRover schema v2) pointing at **`./Dockerfile`**, plus a **multi-stage Dockerfile**: Node builds the production `dist/`, then **nginx** serves it on port **80** (CapRover’s default).
+
+1. Create or select an app in CapRover → connect your **Git** repo (or upload tar) so CapRover sees `captain-definition` next to `package.json`.
+2. Deploy (CapRover uses **`captain-definition`** automatically; it references the **Dockerfile**). If your dashboard asks for a custom path, use **`./captain-definition`** (default).
+3. Under **App Configs → Deployment →** build settings, add a **Build Argument**:
+   - **Key:** `VITE_SITE_URL`
+   - **Value:** your public URL **without** a trailing slash, e.g. `https://env-tool.captain.example.com`  
+     This bakes the correct canonical, Open Graph, and sitemap URLs into the static files.
+
+Local smoke test:
+
+```bash
+docker build --build-arg VITE_SITE_URL=https://your-live-domain.example -t ultimate-env-tool .
+docker run --rm -p 8080:80 ultimate-env-tool
+# open http://localhost:8080
+```
+
+Files: [`captain-definition`](captain-definition), [`Dockerfile`](Dockerfile), [`nginx.conf`](nginx.conf), [`.dockerignore`](.dockerignore).
+
 ---
 
 ## Project layout
 
 ```
-├── public/           # Static assets (favicon, og-image, web manifest)
+├── captain-definition # CapRover: schemaVersion 2 → ./Dockerfile
+├── Dockerfile        # Multi-stage: build SPA + nginx runtime
+├── nginx.conf        # SPA static hosting + try_files fallback
+├── public/           # Static assets (favicon, og-image.png, web manifest)
 ├── src/
 │   ├── components/ # UI: matrix, slots, hybrid builder, legend, dialogs
 │   ├── lib/        # Parsing, persistence, download helpers
