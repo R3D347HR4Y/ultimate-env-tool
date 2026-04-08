@@ -901,6 +901,21 @@ export default function App() {
             </div>
             <div>
               <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Trusting your browser and extensions
+              </h3>
+              <p className="mt-1">
+                This app runs entirely in your browser, so your threat model includes{' '}
+                <strong className="font-medium text-zinc-900 dark:text-zinc-100">everything that can touch the page</strong>: the
+                browser itself, and any <strong className="font-medium text-zinc-900 dark:text-zinc-100">extensions</strong> you have
+                installed. Extensions with broad permissions (e.g. reading or scripting every site) could in principle inspect or
+                alter what you paste or type, interact with storage, or observe the clipboard when you copy. Password managers and
+                form helpers are convenient but they also participate in that environment. For high-sensitivity secrets, consider a
+                clean browser profile with only extensions you trust, a private window with extensions disabled where possible, or
+                self-hosting this bundle and opening it offline or on a locked-down machine.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 Static hosting &amp; operator access
               </h3>
               <p className="mt-1">
