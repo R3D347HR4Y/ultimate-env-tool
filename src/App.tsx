@@ -7,7 +7,7 @@ import { EnablePersistenceDialog, UnlockDialog } from './components/PersistenceD
 import { downloadFile } from './lib/download'
 import { indicesFromMask, summarizeValueRelations } from './lib/presence'
 import type { PresenceMask, ValueRelationSummary } from './lib/presence'
-import { isValidEnvKeyName, parseEnv, renameEnvKey, upsertEnvValue } from './lib/parseEnv'
+import { isValidEnvKeyName, parseEnv, removeKeyFromEnv, renameEnvKey, upsertEnvValue } from './lib/parseEnv'
 import {
   encryptSnapshot,
   clearPersistedStorage,
@@ -466,6 +466,42 @@ export default function App() {
     }, 2200)
   }, [])
 
+  const addKeyToAllEnvs = useCallback(
+    (key: string) => {
+      if (keysInOrder.includes(key)) {
+        showToast(`Variable ${key} already exists`)
+        return
+      }
+      setSlots((prev) =>
+        prev.map((slot) => ({ ...slot, rawText: upsertEnvValue(slot.rawText, key, '') }))
+      )
+      showToast(`Added ${key} to all envs`)
+    },
+    [keysInOrder, showToast]
+  )
+
+  const removeKeyFromAllEnvs = useCallback(
+    (key: string) => {
+      setSlots((prev) =>
+        prev.map((slot) => ({ ...slot, rawText: removeKeyFromEnv(slot.rawText, key) }))
+      )
+      showToast(`Removed ${key} from all envs`)
+    },
+    [showToast]
+  )
+
+  const unsetKeyInEnv = useCallback(
+    (slotId: string, key: string) => {
+      setSlots((prev) =>
+        prev.map((slot) =>
+          slot.id === slotId ? { ...slot, rawText: removeKeyFromEnv(slot.rawText, key) } : slot
+        )
+      )
+      showToast(`Unset ${key} in this env`)
+    },
+    [showToast]
+  )
+
   const exportEncryptedArchive = useCallback(async () => {
     const key = cryptoKeyRef.current
     if (!key) {
@@ -786,6 +822,9 @@ export default function App() {
                       hideContents={hideTableContents}
                       onUpdateCellValue={updateCellValue}
                       onRenameKey={renameKeyAcrossEnvs}
+                      onAddKeyToAllEnvs={addKeyToAllEnvs}
+                      onRemoveKeyFromAllEnvs={removeKeyFromAllEnvs}
+                      onUnsetKeyInEnv={unsetKeyInEnv}
                       onToast={showToast}
                       keyColumnWidth={keyColumnWidth}
                       valueColumnWidth={valueColumnWidth}

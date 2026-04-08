@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   isValidEnvKeyName,
   parseEnv,
+  removeKeyFromEnv,
   renameEnvKey,
   serializeEnvEntries,
   serializeValue,
@@ -86,6 +87,11 @@ describe('serialize', () => {
   it('renames every occurrence of a key while preserving values', () => {
     const out = renameEnvKey('# c\nKEY=old\nOTHER=x\nKEY=last\n', 'KEY', 'RENAMED_KEY')
     expect(out).toBe('# c\nRENAMED_KEY=old\nOTHER=x\nRENAMED_KEY=last\n')
+  })
+
+  it('removes every assignment for a key in one env', () => {
+    const out = removeKeyFromEnv('# c\nA=1\nB=2\nA=3\n', 'A')
+    expect(out).toBe('# c\nB=2\n')
   })
 
   it('validates env key names', () => {

@@ -281,3 +281,10 @@ export function renameEnvKey(content: string, fromKey: string, toKey: string): s
     )
   )
 }
+
+/** Remove every assignment for a key in this env (unset). Duplicate lines for the same key are all removed. */
+export function removeKeyFromEnv(content: string, key: string): string {
+  const parsed = parseEnv(content)
+  const filtered = parsed.entries.filter((e) => !(e.type === 'kv' && e.key === key))
+  return serializeEnvEntries(filtered)
+}

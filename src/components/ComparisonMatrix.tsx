@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { copyToClipboard } from '../lib/download'
 import { cellStyleForValueMatch } from '../lib/presence'
 import type { PresenceMask } from '../lib/presence'
+import { isValidEnvKeyName } from '../lib/parseEnv'
 import type { EnvSlotParsed } from '../types'
 
 type Props = {
@@ -12,11 +13,27 @@ type Props = {
   hideContents: boolean
   onUpdateCellValue: (slotId: string, key: string, value: string) => void
   onRenameKey: (fromKey: string, toKey: string) => boolean
+  onAddKeyToAllEnvs: (key: string) => void
+  onRemoveKeyFromAllEnvs: (key: string) => void
+  onUnsetKeyInEnv: (slotId: string, key: string) => void
   onToast: (message: string) => void
   keyColumnWidth: number
   valueColumnWidth: number
   onKeyColumnWidthChange: (width: number) => void
   onValueColumnWidthChange: (width: number) => void
+}
+
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" className={className} fill="none" stroke="currentColor" aria-hidden>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.35}
+        d="M2.5 4h11M6 4V2.5h4V4m-7 0-.9 9.1A1 1 0 0 0 5.1 14h5.8a1 1 0 0 0 .99-.9L13 4M6.5 7v4.5M9.5 7v4.5"
+      />
+    </svg>
+  )
 }
 
 type EditingCell = {
@@ -41,6 +58,9 @@ export function ComparisonMatrix({
   hideContents,
   onUpdateCellValue,
   onRenameKey,
+  onAddKeyToAllEnvs,
+  onRemoveKeyFromAllEnvs,
+  onUnsetKeyInEnv,
   onToast,
   keyColumnWidth,
   valueColumnWidth,
@@ -86,16 +106,185 @@ export function ComparisonMatrix({
     if (!keys.includes(editingKeyRow.key)) setEditingKeyRow(null)
   }, [editingKeyRow, keys])
 
-  if (keys.length === 0) {
-    return (
-      <div className="rounded-xl border border-dashed border-zinc-300 bg-white px-6 py-10 text-center text-sm text-zinc-500 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-400">
-        No keys match the current row filters. Clear filters in the legend to see all keys.
-      </div>
-    )
-  }
+  const dialogId = useId()
+  const addVariableInputRef = useRef<HTMLInputElement>(null)
+  const [addVariableOpen, setAddVariableOpen] = useState(false)
+  const [addVariableDraft, setAddVariableDraft] = useState('')
+  const [deleteKeyTarget, setDeleteKeyTarget] = useState<string | null>(null)
 
-  return (
-    <div className="min-w-0 max-w-full rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-950">
+  useEffect(() => {
+    if (!addVariableOpen) return
+    const t = window.setTimeout(() => addVariableInputRef.current?.focus(), 0)
+    return () => window.clearTimeout(t)
+  }, [addVariableOpen])
+
+  const openAddVariableDialog = useCallback(() => {
+    setAddVariableDraft('')
+    setAddVariableOpen(true)
+  }, [])
+
+  const closeAddVariableDialog = useCallback(() => {
+    setAddVariableOpen(false)
+    setAddVariableDraft('')
+  }, [])
+
+  const submitAddVariable = useCallback(() => {
+    const name = addVariableDraft.trim()
+    if (!name) {
+      onToast('Name is required')
+      return
+    }
+    if (!isValidEnvKeyName(name)) {
+      onToast('Key names must start with a letter or underscore')
+      return
+    }
+    if (keys.includes(name)) {
+      onToast(`Variable ${name} already exists`)
+      return
+    }
+    onAddKeyToAllEnvs(name)
+    closeAddVariableDialog()
+  }, [addVariableDraft, closeAddVariableDialog, keys, onAddKeyToAllEnvs, onToast])
+
+  const confirmUnsetInEnv = useCallback(
+    (slotId: string, key: string, envLabel: string) => {
+      if (!window.confirm(`Remove "${key}" from ${envLabel} only?\n\nOther columns are unchanged.`)) {
+        return
+      }
+      onUnsetKeyInEnv(slotId, key)
+    },
+    [onUnsetKeyInEnv]
+  )
+
+  const modals = (
+    <>
+      {addVariableOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/70 p-4 backdrop-blur-sm"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeAddVariableDialog()
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`${dialogId}-add-title`}
+            className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-700 dark:bg-zinc-900"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <h2 id={`${dialogId}-add-title`} className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+              Add variable to all envs
+            </h2>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              The name is added to every column with an empty value. Use letters, numbers, and underscores; must start
+              with a letter or underscore.
+            </p>
+            <label className="mt-4 block text-xs font-medium text-zinc-700 dark:text-zinc-300" htmlFor={`${dialogId}-add-input`}>
+              Variable name
+            </label>
+            <input
+              ref={addVariableInputRef}
+              id={`${dialogId}-add-input`}
+              type="text"
+              autoComplete="off"
+              spellCheck={false}
+              value={addVariableDraft}
+              onChange={(event) => setAddVariableDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  submitAddVariable()
+                }
+                if (event.key === 'Escape') closeAddVariableDialog()
+              }}
+              placeholder="e.g. NEW_FEATURE_FLAG"
+              className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm text-zinc-900 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-100"
+            />
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                onClick={closeAddVariableDialog}
+                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => submitAddVariable()}
+                className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500"
+              >
+                Add to all columns
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {deleteKeyTarget !== null && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/70 p-4 backdrop-blur-sm"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setDeleteKeyTarget(null)
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`${dialogId}-del-title`}
+            className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-700 dark:bg-zinc-900"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <h2 id={`${dialogId}-del-title`} className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+              Remove variable everywhere?
+            </h2>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              Remove <code className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-xs dark:bg-zinc-800">{deleteKeyTarget}</code> from{' '}
+              <strong className="font-medium text-zinc-900 dark:text-zinc-100">every</strong> environment column. This cannot be undone.
+            </p>
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteKeyTarget(null)}
+                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const k = deleteKeyTarget
+                  setDeleteKeyTarget(null)
+                  if (k) onRemoveKeyFromAllEnvs(k)
+                }}
+                className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500"
+              >
+                Remove from all envs
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+
+  const matrixBody =
+    keys.length === 0 ? (
+      <div className="rounded-xl border border-dashed border-zinc-300 bg-white px-6 py-10 text-center text-sm text-zinc-500 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-400">
+        <p>No keys match the current row filters. Clear filters in the legend to see all keys.</p>
+        <button
+          type="button"
+          onClick={openAddVariableDialog}
+          className="mt-4 inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+        >
+          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 stroke-current" fill="none" aria-hidden>
+            <path strokeLinecap="round" strokeWidth={1.5} d="M8 3.5v9M3.5 8h9" />
+          </svg>
+          Add variable to all envs
+        </button>
+      </div>
+    ) : (
+      <div className="min-w-0 max-w-full rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-950">
       <div className="rounded-t-xl border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
         <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">Comparison matrix</h2>
         <p className="mt-1 max-w-3xl text-xs text-zinc-600 dark:text-zinc-400">
@@ -287,7 +476,7 @@ export function ComparisonMatrix({
                         {key}
                       </span>
                       <span
-                        className="absolute top-0.5 right-1 z-10 flex items-center gap-1 rounded-md bg-white/70 p-0.5 opacity-20 transition-opacity group-hover:opacity-100 focus-within:opacity-100 dark:bg-zinc-950/70"
+                        className="absolute top-0.5 right-1 z-10 flex flex-row-reverse items-center gap-1 rounded-md bg-white/70 p-0.5 opacity-20 transition-opacity group-hover:opacity-100 focus-within:opacity-100 dark:bg-zinc-950/70"
                         onClick={(event) => event.stopPropagation()}
                       >
                         <button
@@ -315,6 +504,14 @@ export function ComparisonMatrix({
                             <path d="M2 11.75V14h2.25L12.6 5.65 10.35 3.4 2 11.75Z" strokeWidth="1.3" />
                             <path d="m9.85 3.9 2.25 2.25 1.1-1.1a1.6 1.6 0 0 0 0-2.25l-.2-.2a1.6 1.6 0 0 0-2.25 0l-.9.9Z" strokeWidth="1.3" />
                           </svg>
+                        </button>
+                        <button
+                          type="button"
+                          className="rounded border border-rose-200 bg-white/90 p-1 text-rose-600 hover:bg-rose-50 hover:text-rose-800 dark:border-rose-900/50 dark:bg-zinc-950/80 dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                          title={`Remove ${key} from every environment`}
+                          onClick={() => setDeleteKeyTarget(key)}
+                        >
+                          <TrashIcon className="h-3.5 w-3.5" />
                         </button>
                       </span>
                     </>
@@ -403,7 +600,7 @@ export function ComparisonMatrix({
                           </span>
                           {!rowMasked && (
                             <span
-                              className="absolute top-0.5 right-1 z-10 flex items-center gap-1 rounded-md bg-white/70 p-0.5 opacity-20 transition-opacity group-hover:opacity-100 focus-within:opacity-100 dark:bg-zinc-950/70"
+                              className="absolute top-0.5 right-1 z-10 flex flex-row-reverse items-center gap-1 rounded-md bg-white/70 p-0.5 opacity-20 transition-opacity group-hover:opacity-100 focus-within:opacity-100 dark:bg-zinc-950/70"
                               onClick={(event) => event.stopPropagation()}
                             >
                               {has && (
@@ -434,6 +631,16 @@ export function ComparisonMatrix({
                                   <path d="m9.85 3.9 2.25 2.25 1.1-1.1a1.6 1.6 0 0 0 0-2.25l-.2-.2a1.6 1.6 0 0 0-2.25 0l-.9.9Z" strokeWidth="1.3" />
                                 </svg>
                               </button>
+                              {has && (
+                                <button
+                                  type="button"
+                                  className="rounded border border-rose-200 bg-white/90 p-1 text-rose-600 hover:bg-rose-50 hover:text-rose-800 focus-visible:opacity-100 dark:border-rose-900/50 dark:bg-zinc-950/80 dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                                  title={`Unset ${key} in ${envName} only`}
+                                  onClick={() => confirmUnsetInEnv(slot.id, key, envName)}
+                                >
+                                  <TrashIcon className="h-3.5 w-3.5" />
+                                </button>
+                              )}
                             </span>
                           )}
                         </div>
@@ -451,9 +658,30 @@ export function ComparisonMatrix({
               </tr>
             )
           })}
+            <tr className="border-t border-zinc-200 bg-zinc-50/70 dark:border-zinc-700 dark:bg-zinc-900/35">
+              <td className="px-3 py-2" colSpan={slots.length + 1}>
+                <button
+                  type="button"
+                  onClick={openAddVariableDialog}
+                  className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-800 shadow-sm transition hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-500 dark:hover:bg-zinc-800"
+                >
+                  <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 stroke-current" fill="none" aria-hidden>
+                    <path strokeLinecap="round" strokeWidth={1.5} d="M8 3.5v9M3.5 8h9" />
+                  </svg>
+                  Add variable to all envs
+                </button>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
     </div>
+    )
+
+  return (
+    <>
+      {matrixBody}
+      {modals}
+    </>
   )
 }
