@@ -1,30 +1,69 @@
-# Ultimate Env Tool
+# Ultimate Env Tool — Compare, Diff & Merge `.env` Files in Your Browser
 
-Compare, diff, and merge multiple **[`.env`](https://www.npmjs.com/package/dotenv)** (dotenv) files **in your browser**. Align keys across environments, inspect a side-by-side matrix, build a **hybrid merge** with configurable priority, rename keys everywhere, and optionally keep an **encrypted** backup in the browser—**no backend required** for normal use.
+> The open-source dotenv comparison tool: side-by-side diff matrix, hybrid merge with priority, encrypted local persistence — **100 % client-side, no backend required**.
+
+<p align="center">
+  <img src="documentation/matrix.png" alt="Side-by-side comparison matrix showing Dev, Staging and Prod environment variables with color-coded diff indicators" width="100%" />
+</p>
 
 Created by **[Eliott Guillaumin](https://eliott.cloud)**.
 
 ---
 
-## Features
+## Why Ultimate Env Tool?
 
-- **Environment columns** — Paste, type, or drop each file into its own slot; name and color columns for local, staging, production, etc.
-- **Comparison matrix** — Row/column view of every key; edit cells, copy values, rename a key across all envs at once; optional masking/hiding for screen sharing.
-- **Row filters (legend)** — Filter the matrix by patterns such as same value on a subset of envs, unique to one env, all different, or missing on an env.
-- **Hybrid env merge** — Choose **union** or **intersection** for which keys appear, enable/disable sources, drag to set **priority**; **first defined wins** per key for the merged output.
-- **Optional persistence** — AES-256-GCM encrypted snapshot in `localStorage`; encryption key stays in tab memory until you close it. Export/import **`ultimate-env-tool.encrypted-archive.json`** when persistence is enabled.
-- **Client-side first** — No account and no server for editing; data stays on your machine even if you opt into encrypted local storage (provides you with an AES-256 key to store in your favorite Password Manager)
+Managing `.env` files across **local**, **staging**, and **production** environments is error-prone. Missing keys, wrong values, and copy-paste mistakes cause outages. Ultimate Env Tool lets you **drop all your dotenv files side-by-side**, instantly spot every mismatch, and build a merged result — entirely in your browser.
 
 ---
 
-## Tech stack
+## Features
 
-| Area        | Choice                          |
-| ----------- | ------------------------------- |
-| UI          | React 19, TypeScript            |
-| Styling     | Tailwind CSS v4 (`@tailwindcss/vite`) |
-| Build       | Vite 8                          |
-| Tests       | Vitest                          |
+### Environment Columns — Drop, Paste, or Type
+
+Paste, type, or drag-and-drop each `.env` file into its own color-coded slot. Name your columns (local, staging, production, …) and compare up to 8 environments at once.
+
+<p align="center">
+  <img src="documentation/envdropper.png" alt="Environment columns interface — drag-and-drop .env files into named color-coded slots for Dev, Staging and Prod" width="100%" />
+</p>
+
+### Comparison Matrix — Spot Mismatches Instantly
+
+A row-per-key, column-per-env table lets you **edit cells in place**, copy values, and **rename a key across all environments at once**. Color indicators highlight which values match, differ, or are missing. Toggle mask mode when screen-sharing.
+
+### Row Filters (Legend)
+
+Filter the matrix to show only keys that are **identical everywhere**, **unique to one env**, **different across a subset**, or **missing on a specific env** — so you can focus on what matters.
+
+### Hybrid Env Merge — Build Your Ideal `.env`
+
+Choose **union** or **intersection** for which keys appear, toggle sources on/off, drag to set **priority order**, and download a single merged file. **First-defined-wins** per key — perfect for layering local overrides on top of shared defaults.
+
+<p align="center">
+  <img src="documentation/hybridmerge.png" alt="Hybrid env merge panel — choose union or intersection, drag to set priority, preview and download the merged .env file" width="560" />
+</p>
+
+### Encrypted Persistence — AES-256-GCM Local Storage
+
+Optionally save an **AES-256-GCM encrypted snapshot** in `localStorage`. The encryption key stays in tab memory only — copy it to your password manager. Export/import **`ultimate-env-tool.encrypted-archive.json`** for backup.
+
+<p align="center">
+  <img src="documentation/enablepersistence.png" alt="Enable persistence dialog — AES-256 encryption key generation with copy-to-clipboard and password-manager guidance" width="560" />
+</p>
+
+### Client-Side First — No Account, No Server
+
+Your secrets never leave your machine. No sign-up, no telemetry, no backend calls for editing. Even encrypted persistence is entirely local.
+
+---
+
+## Tech Stack
+
+| Area    | Choice                                |
+| ------- | ------------------------------------- |
+| UI      | React 19, TypeScript                  |
+| Styling | Tailwind CSS v4 (`@tailwindcss/vite`) |
+| Build   | Vite 8                                |
+| Tests   | Vitest                                |
 
 ---
 
@@ -34,7 +73,7 @@ Created by **[Eliott Guillaumin](https://eliott.cloud)**.
 
 ---
 
-## Getting started
+## Getting Started
 
 ```bash
 npm install
@@ -106,7 +145,7 @@ Files: [`captain-definition`](captain-definition), [`Dockerfile`](Dockerfile), [
 
 ---
 
-## Project layout
+## Project Layout
 
 ```
 ├── captain-definition # CapRover: schemaVersion 2 → ./Dockerfile
@@ -125,7 +164,7 @@ Files: [`captain-definition`](captain-definition), [`Dockerfile`](Dockerfile), [
 
 ---
 
-## Security & privacy
+## Security & Privacy
 
 - **Default:** Nothing is uploaded; closing the tab discards in-memory state unless you enabled encrypted persistence.
 - **Persistence:** Uses the Web Crypto API (**AES-256-GCM**). The passphrase-derived key is intended to exist only in that tab session; review the in-app disclaimer before enabling.
