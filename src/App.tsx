@@ -124,6 +124,20 @@ function allSubsetMasks(indices: number[], minSize = 2): number[] {
   return out
 }
 
+const AUTO_LOCK_STORAGE_KEY = 'env-compare.autoLockMinutes'
+const AUTO_LOCK_OPTIONS = [0, 1, 5, 15, 30, 60] as const
+
+function readStoredAutoLockMinutes(): number {
+  try {
+    const raw = localStorage.getItem(AUTO_LOCK_STORAGE_KEY)
+    if (raw === null) return 0
+    const n = Number.parseInt(raw, 10)
+    return AUTO_LOCK_OPTIONS.includes(n as (typeof AUTO_LOCK_OPTIONS)[number]) ? n : 0
+  } catch {
+    return 0
+  }
+}
+
 export default function App() {
   const cryptoKeyRef = useRef<CryptoKey | null>(null)
   const toastTimerRef = useRef<number | null>(null)
@@ -132,6 +146,9 @@ export default function App() {
   const [enableDialogOpen, setEnableDialogOpen] = useState(false)
   const [unlockDialogOpen, setUnlockDialogOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [autoLockMinutes, setAutoLockMinutes] = useState(readStoredAutoLockMinutes)
+
+  const lockWorkspaceFromIdleRef = useRef<() => Promise<void>>(async () => {})
 
   const [slots, setSlots] = useState<EnvSlot[]>(() =>
     Array.from({ length: DEFAULT_SLOT_COUNT }, (_, i) => emptySlot(uid(), i))
@@ -466,6 +483,36 @@ export default function App() {
     }, 2200)
   }, [])
 
+  useEffect(() => {
+    lockWorkspaceFromIdleRef.current = async () => {
+      const key = cryptoKeyRef.current
+      if (!key) return
+      try {
+        const enc = await encryptSnapshot(key, buildSnapshot())
+        writePersistedRaw(enc)
+      } catch {
+        return
+      }
+      cryptoKeyRef.current = null
+      const dw = defaultQuarterTableWidth(false)
+      setSlots(Array.from({ length: DEFAULT_SLOT_COUNT }, (_, i) => emptySlot(uid(), i)))
+      setAlignKeys(true)
+      setSortAsc(true)
+      setHideEnvContents(true)
+      setHideTableContents(true)
+      setUseFullWidth(false)
+      setLegendCollapsed(false)
+      setLegendFilterIds(new Set())
+      setKeyColumnWidth(clamp(dw, MIN_KEY_COLUMN_WIDTH, MAX_KEY_COLUMN_WIDTH))
+      setValueColumnWidth(clamp(dw, MIN_VALUE_COLUMN_WIDTH, MAX_VALUE_COLUMN_WIDTH))
+      setPriorityOrder([])
+      setHybridEnabledIds(null)
+      setHybridUniverse('union')
+      setBootstrapped(false)
+      showToast('Idle lock — workspace encrypted; enter key to continue.')
+    }
+  }, [buildSnapshot, showToast])
+
   const addKeyToAllEnvs = useCallback(
     (key: string) => {
       if (keysInOrder.includes(key)) {
@@ -550,6 +597,38 @@ export default function App() {
   const showUnlock = unlockDialogOpen || (!bootstrapped && hasPersistedCipher())
   const layoutWidthClass = useFullWidth ? 'max-w-none' : 'max-w-7xl'
 
+  useEffect(() => {
+    if (showUnlock || !persistenceActive || autoLockMinutes <= 0) return
+    const key = cryptoKeyRef.current
+    if (!key) return
+
+    const ms = autoLockMinutes * 60_000
+    let timer: number
+
+    const resetIdleTimer = () => {
+      window.clearTimeout(timer)
+      timer = window.setTimeout(() => {
+        void lockWorkspaceFromIdleRef.current()
+      }, ms)
+    }
+
+    resetIdleTimer()
+
+    const opts = { capture: true, passive: true } as const
+    const onActivity = () => resetIdleTimer()
+
+    for (const ev of ['pointerdown', 'pointermove', 'keydown', 'wheel'] as const) {
+      window.addEventListener(ev, onActivity, opts)
+    }
+
+    return () => {
+      window.clearTimeout(timer)
+      for (const ev of ['pointerdown', 'pointermove', 'keydown', 'wheel'] as const) {
+        window.removeEventListener(ev, onActivity, opts)
+      }
+    }
+  }, [showUnlock, persistenceActive, autoLockMinutes])
+
   return (
     <div className="min-h-svh bg-zinc-100 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <UnlockDialog
@@ -631,6 +710,43 @@ export default function App() {
                     </button>
                   )}
                 </div>
+                {bootstrapped && persistenceActive && !showUnlock && (
+                  <div className="mt-2 border-t border-zinc-200/80 pt-2 dark:border-zinc-700/80">
+                    <label className="flex flex-col gap-1">
+                      <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+                        Auto-lock when idle
+                      </span>
+                      <select
+                        value={autoLockMinutes}
+                        onChange={(e) => {
+                          const v = Number.parseInt(e.target.value, 10)
+                          const next = AUTO_LOCK_OPTIONS.includes(
+                            v as (typeof AUTO_LOCK_OPTIONS)[number]
+                          )
+                            ? v
+                            : 0
+                          setAutoLockMinutes(next)
+                          try {
+                            localStorage.setItem(AUTO_LOCK_STORAGE_KEY, String(next))
+                          } catch {
+                            /* ignore */
+                          }
+                        }}
+                        className="rounded-lg border border-zinc-200 bg-white px-2 py-1.5 text-xs text-zinc-900 shadow-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-400/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-violet-500"
+                      >
+                        {AUTO_LOCK_OPTIONS.map((m) => (
+                          <option key={m} value={m}>
+                            {m === 0 ? 'Off' : `${m} min`}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <p className="mt-1 text-[10px] leading-snug text-zinc-500 dark:text-zinc-400">
+                      No pointer, scroll, or keys for this long → save ciphertext, drop key from memory,
+                      ask for key again.
+                    </p>
+                  </div>
+                )}
               </div>
             </aside>
           </div>

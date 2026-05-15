@@ -1,6 +1,6 @@
 # Ultimate Env Tool — Compare, Diff & Merge `.env` Files in Your Browser
 
-> The open-source dotenv comparison tool: side-by-side diff matrix, hybrid merge with priority, encrypted local persistence — **100 % client-side, no backend required**.
+> The open-source dotenv comparison tool: side-by-side diff matrix, hybrid merge with priority, encrypted local persistence with optional idle auto-lock — **100 % client-side, no backend required**.
 
 <p align="center">
   <img src="documentation/matrix.png" alt="Side-by-side comparison matrix showing Dev, Staging and Prod environment variables with color-coded diff indicators" width="100%" />
@@ -45,6 +45,8 @@ Choose **union** or **intersection** for which keys appear, toggle sources on/of
 ### Encrypted Persistence — AES-256-GCM Local Storage
 
 Optionally save an **AES-256-GCM encrypted snapshot** in `localStorage`. The encryption key stays in tab memory only — copy it to your password manager. Export/import **`ultimate-env-tool.encrypted-archive.json`** for backup.
+
+**Automatic idle lock (optional):** When persistence is enabled, you can choose **auto-lock after** **Off**, **1**, **5**, **15**, **30**, or **60 minutes** of inactivity (no pointer, scroll wheel, or keyboard activity). When the timer fires, the app **re-encrypts the current workspace** into `localStorage`, **drops the in-memory key**, clears the on-screen workspace, and shows the **unlock** dialog again — same flow as returning with an encrypted save. Your choice is stored under the browser key **`env-compare.autoLockMinutes`**.
 
 <p align="center">
   <img src="documentation/enablepersistence.png" alt="Enable persistence dialog — AES-256 encryption key generation with copy-to-clipboard and password-manager guidance" width="560" />
@@ -168,6 +170,7 @@ Files: [`captain-definition`](captain-definition), [`Dockerfile`](Dockerfile), [
 
 - **Default:** Nothing is uploaded; closing the tab discards in-memory state unless you enabled encrypted persistence.
 - **Persistence:** Uses the Web Crypto API (**AES-256-GCM**). The passphrase-derived key is intended to exist only in that tab session; review the in-app disclaimer before enabling.
+- **Idle auto-lock:** Reduces how long decrypted contents stay in a warm tab by forcing re-entry of the key after a chosen idle period. Like any SPA, memory hygiene depends on the engine — treat auto-lock as a practical safeguard, not a guarantee against forensic recovery.
 
 ---
 
